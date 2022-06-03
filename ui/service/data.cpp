@@ -91,8 +91,7 @@ void data::readyReady()
          p_req2 = (struct tt_req2 *) datagram.data();
          p_data = (float *) p_req2->buf;
          i_kanal = p_req2->cur_kanal;
-         spsX = p_req2->sps;
-
+        // spsX = p_req2->sps;
         //QByteArray paketkirim;
         //float data10paket_1[2560];
         //qDebug()<<"sps :"<<spsX;
@@ -106,8 +105,6 @@ void data::readyReady()
                      counterCH1++;
                      if (counterCH1<11)
                      {
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
                     //mengirim 1o paket kanal 1
                          int i;
                          for(i=0; i<256; i++)
@@ -117,17 +114,13 @@ void data::readyReady()
                                 //qDebug()<<p_data[i];
                              }
                        }//counter
-
                  }//kanal 1
-
                  else if(i_kanal==1)//kanal 2
                  {
                     // qDebug()<<"-KANAL  2-" <<"ip pertama";
                      counterCH2++;
                      if (counterCH2<11)
                      {
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
                     //mengirim 1o paket kanal 2
                          int i;
                          for(i=0; i<256; i++)
@@ -135,18 +128,14 @@ void data::readyReady()
                                 // data_y_voltage1[i]=p_data[i%256]; //mengirim 1 paket
                                 data10paket_2[(counterCH2-1)*256+i]=p_data[i%256];//tracking data dari 0-2560 per paket data sebanyak 256
                              }
-
                      }
                  }//kanal 2
-
                  else if(i_kanal==2)//kanal 3
                  {
-                   //  qDebug()<<"-KANAL  3-" <<"ip pertama";
+                   //qDebug()<<"-KANAL  3-" <<"ip pertama";
                      counterCH3++;
                      if (counterCH3<11)
                      {
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
                     //mengirim 1o paket kanal 3
                          int i;
                          for(i=0; i<256; i++)
@@ -154,32 +143,24 @@ void data::readyReady()
                                 // data_y_voltage1[i]=p_data[i%256]; //mengirim 1 paket
                                 data10paket_3[(counterCH3-1)*256+i]=p_data[i%256];//tracking data dari 0-2560 per paket data sebanyak 256
                              }
-
                      }
                  }// kanal 3
-
                  else if(i_kanal==3)//kanal 3
                  {
                     // qDebug()<<"-KANAL  4-" <<"ip pertama";
                      counterCH4++;
                      if (counterCH4<11)
                      {
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
-                    //mengirim 1o paket kanal 4
+                        //mengirim 1o paket kanal 4
                          int i;
                          for(i=0; i<256; i++)
                              {
                                 // data_y_voltage1[i]=p_data[i%256]; //mengirim 1 paket
                                 data10paket_4[(counterCH4-1)*256+i]=p_data[i%256];//tracking data dari 0-2560 per paket data sebanyak 256
                              }//for loop
-
                      }//counter channel
-
                  }//kanal 4
-
              }//ip
-
 //-----------------------------------------batas sortir IP------------------------------------------------//
              else if(no_module==1) //ip kedua
              {
@@ -191,8 +172,6 @@ void data::readyReady()
                      counterCH5++;
                      if (counterCH5<11)
                      {
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
                     //mengirim 1o paket kanal 5
                          int i;
                          for(i=0; i<256; i++)
@@ -205,19 +184,15 @@ void data::readyReady()
                          if(counterCH5==10)
                          {
                                  counterCH5=0;
-                                 //sendDataClient1();
                          }
                      }
                  }//kanal 5
-
                  else if(i_kanal==1)//kanal 6
                  {
                    //  qDebug()<<"-KANAL  6-"<<"ip kedua";
                      counterCH6++;
                      if (counterCH6<11)
                      {
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
                     //mengirim 1o paket kanal 6
                          int i;
                          for(i=0; i<256; i++)
@@ -234,8 +209,6 @@ void data::readyReady()
                      counterCH7++;
                      if (counterCH7<11)
                      {
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
                     //mengirim 1o paket kanal 7
                          int i;
                          for(i=0; i<256; i++)
@@ -244,7 +217,6 @@ void data::readyReady()
                                 data10paket_7[(counterCH7-1)*256+i]=p_data[i%256];//tracking data dari 0-2560 per paket data sebanyak 256
                              }
                                 // qDebug()<<"oke masuk ke " << counterCH1 << "CH1" << "-jumlah data " << (counterCH1-1)*256+i;
-
                      }
                  }// kanal 7
 
@@ -254,8 +226,6 @@ void data::readyReady()
                      counterCH8++;
                      if (counterCH8<11)
                      {
-
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
                     //mengirim 1o paket kanal 8
                          int i;
                          for(i=0; i<256; i++)
@@ -271,16 +241,6 @@ void data::readyReady()
                  }//kanal 8
 
              }//ip KEDUA
-
-       //timera->stop();
-//       for(int o=0; o<2560; o++)
-//       {
-//        siapkirim[o]=data10paket_1[o];
-//       }
-//       memcpy(&siapkirim, data10paket_1, 2560 * sizeof(float));
-//       QByteArray byteArray1(reinterpret_cast<const char*>(&siapkirim), 2560 * sizeof(float));
-//       ba = QByteArray::fromRawData(byteArray1, byteArray1.size());
-
 
     }// while
 
