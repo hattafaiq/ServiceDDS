@@ -9,11 +9,19 @@ CONFIG += c++11
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    libme/fft/fourierd.c\
+    libme/fft/fftmisc.c\
+    libme/windowing/windowkan.c\
+    libme/windowing/buat_filter.c\
+    signalprocessing.cpp \
     grafik.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
+    libme/windowing/windowkan.h \
+    libme/windowing/buat_filter.h \
+    signalprocessing.h \
     datasetup.h \
     grafik.h \
     mainwindow.h

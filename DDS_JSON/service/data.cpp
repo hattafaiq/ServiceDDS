@@ -9,17 +9,9 @@ data::data(QObject *parent) : QObject(parent)
     socket->bind(QHostAddress::Any, 5008);
     connect(socket, SIGNAL(readyRead()), this, SLOT(readyReady()));
     //INIT_websocket
-    m_pWebSocketServer1 = new QWebSocketServer(QStringLiteral("Chat Server"),QWebSocketServer::NonSecureMode,this);
+    m_pWebSocketServer1 = new QWebSocketServer(QStringLiteral("OVM"),QWebSocketServer::NonSecureMode,this);
     m_pWebSocketServer1->listen(QHostAddress::Any, 1234);
     connect(m_pWebSocketServer1, SIGNAL(newConnection()),this, SLOT(onNewConnection()));
-  //  qDebug()<<"client connect"<<&address;
-    //INIT_waktu
-    jam = new QTimer(this);
-    connect(jam, SIGNAL(timeout()),this, SLOT(showTime()));
-    jam->start();
-    date = QDate::currentDate();
-    dateTimeText = date.toString();
-    //datamanagement();
 }
 
 void data::init_time()
@@ -28,7 +20,7 @@ void data::init_time()
     timera = new QTimer(this);
     QObject::connect(timer,SIGNAL(timeout()),this, SLOT(refresh_plot()));
     QObject::connect(timera,SIGNAL(timeout()),this, SLOT(datamanagement()));
-    timer->start(2200);//2200 // masih terjadi patahan
+    timer->start(2200);//2200 // harus sesuai interval berdasarkan sps
 }
 
 void data::req_UDP()
@@ -37,14 +29,7 @@ void data::req_UDP()
     Data.append("getdata");
     socket->writeDatagram(Data,QHostAddress("192.168.0.101"), 5006);
     socket->writeDatagram(Data,QHostAddress("192.168.0.102"), 5006);
-    counterCH1=0;
-    counterCH2=0;
-    counterCH3=0;
-    counterCH4=0;
-    counterCH5=0;
-    counterCH6=0;
-    counterCH7=0;
-    counterCH8=0;
+    kirim=0;
 }
 
 void data::showTime()
@@ -59,10 +44,9 @@ void data::readyReady()
     struct tt_req2 *p_req2;
     float *p_data;
     int i_kanal;
-    unsigned short spsX;
-   // int cnt_ch[JUM_PLOT];
-   // float *data_send[JUM_PLOT];
-    int no_module;
+    // int cnt_ch[JUM_PLOT];
+    // float *data_send[JUM_PLOT];
+    //   int no_module;
     //= -1;
     while (socket->hasPendingDatagrams())
     {
@@ -74,48 +58,41 @@ void data::readyReady()
         QHostAddress ip_modul_1, ip_modul_2;
         ip_modul_1.setAddress(ip1);
         ip_modul_2.setAddress(ip2);
-        if(sendera.toIPv4Address() == ip_modul_1.toIPv4Address())
-        {
-            no_module = 0;
-          //  qDebug()<<"module 1 aktif";
-           //qDebug()<<"ip setup modul 1 = "<< ip_modul_1.toIPv4Address();
-            //qDebug()<<"ip pengirim modul 1 = "<< sendera.toIPv4Address();
-        }
-        else if(sendera.toIPv4Address() == ip_modul_2.toIPv4Address())
-        {
-            no_module = 1;
-           // qDebug()<<"module 2 aktif";
-            //qDebug()<<"ip setup modul 2 = "<< ip_modul_1.toIPv4Address();
-            //qDebug()<<"ip pengirim modul 2 = "<< sendera.toIPv4Address();
-        }
+
          p_req2 = (struct tt_req2 *) datagram.data();
          p_data = (float *) p_req2->buf;
          i_kanal = p_req2->cur_kanal;
          spsX = p_req2->sps;
 
-        //QByteArray paketkirim;
-        //float data10paket_1[2560];
-        //qDebug()<<"sps :"<<spsX;
-             if(no_module==0) //ip pertama
+             if(sendera.toIPv4Address() == ip_modul_1.toIPv4Address()) //ip pertama
              {
                 // qDebug()<<"ip pertama";
-                 //counterCH1++;// ikut 1 paket
+                 // ikut 1 paket
                  if(i_kanal==0)//kanal 1
                  {
-                     qDebug()<<"-KANAL  1-" <<"ip pertama";
+                     //qDebug()<<"-KANAL  1-" <<"ip pertama";
+
                      counterCH1++;
+                     qDebug()<<"paket ke "<<counterCH1;
                      if (counterCH1<11)
                      {
                     //mengirim 1o paket kanal 1
+                         //QJsonArray buff1;
                          int i;
                          for(i=0; i<256; i++)
                              {
                                 //data_y_voltage1[i]=p_data[i%256]; //mengirim 1 paket
-                                data10paket_1[(counterCH1-1)*256+i]=p_data[i%256];//tracking data dari 0-2560 per paket data sebanyak 256
-                                //qDebug()<<p_data[i];
+                                data10paket_1[(counterCH1-1)*256+i]=p_data[i];//tracking data dari 0-2560 per paket data sebanyak 256
                              }
-                       }//counter
 
+                       }//counter
+                     if(counterCH1==10) counterCH1=0;
+//                     {
+//                         counterCH1=0;
+//                        datamanagement();
+//                       // memset(&data10paket_1,'\0',sizeof (data10paket_1)/sizeof (float));
+                     //kirim berdasarkan counter paket
+//                     }
                  }//kanal 1
 
                  else if(i_kanal==1)//kanal 2
@@ -131,7 +108,9 @@ void data::readyReady()
                                 // data_y_voltage1[i]=p_data[i%256]; //mengirim 1 paket
                                 data10paket_2[(counterCH2-1)*256+i]=p_data[i%256];//tracking data dari 0-2560 per paket data sebanyak 256
                              }
+
                      }
+                     if(counterCH2==10) counterCH2=0;
                  }//kanal 2
                  else if(i_kanal==2)//kanal 3
                  {
@@ -147,6 +126,7 @@ void data::readyReady()
                                 data10paket_3[(counterCH3-1)*256+i]=p_data[i%256];//tracking data dari 0-2560 per paket data sebanyak 256
                              }
                      }
+                     if(counterCH3==10) counterCH3=0;
                  }// kanal 3
                  else if(i_kanal==3)//kanal 3
                  {
@@ -162,10 +142,12 @@ void data::readyReady()
                                 data10paket_4[(counterCH4-1)*256+i]=p_data[i%256];//tracking data dari 0-2560 per paket data sebanyak 256
                              }//for loop
                      }//counter channel
+                     if(counterCH4==10) counterCH4=0;
                  }//kanal 4
              }//ip
+#if 0
 //-----------------------------------------batas sortir IP------------------------------------------------//
-             else if(no_module==1) //ip kedua
+             else if(sendera.toIPv4Address() == ip_modul_2.toIPv4Address()) //ip kedua
              {
                 // qDebug()<<"ip kedua";
                  //counterCH1++;// ikut 1 paket
@@ -239,63 +221,72 @@ void data::readyReady()
                      }//counter channel
                  }//kanal 8
              }//ip KEDUA
+#endif
     }// while
 }//void
 
-void data::sendDataClient1()
-{
-//    QByteArray ba;
-//    QString qs = "String";
-//    ba += qs;
-
-    QByteArray byteArray1(reinterpret_cast<const char*>(&data10paket_1), 2560 * sizeof(float));
-//   QWebSocket *pSender1 = qobject_cast<QWebSocket *>(sender());
+void data::sendDataClient1(QString isipesan)
+{   
     Q_FOREACH (QWebSocket *pClient1, m_clients1)
     {
-       // pClient1->sendTextMessage(QString::number(byteArray1.size()));
-       // pClient1->sendTextMessage(byteArray1.toHex());
-          pClient1->sendBinaryMessage(docByteArray);
-          qDebug()<<"awal data terkirim---------------------------------------------------------";
-          qDebug()<<"akhir data terkirim---------------------------------------------------------";
+        pClient1->sendTextMessage(isipesan);
+        //pClient1->sendTextMessage(docByteArray);
+        //pClient1->sendBinaryMessage(docByteArray);
+        QHostAddress join=pClient1->peerAddress();
+        QString joinstr=join.toString();
+        qDebug() << "kirim----ke : "<<joinstr;
     }
 }
 
 void data::datamanagement()
 {
+        QJsonObject isikanal;
+        //kanal_p1
+        QJsonObject kanalip1;
+        QJsonObject kanalip2;
+        QJsonObject kanalip3;
+        QJsonObject kanalip4;
+        QJsonObject ip1;
 
-    if((counterCH1 >=10) && (counterCH2 >=10) && (counterCH3 >=10) && (counterCH4 >=10))
-    {
-        QJsonArray buff1;
-        QJsonArray buff2;
-        QJsonArray buff3;
-        QJsonArray buff4;
-        for(int a=0; a<2560; a++)
-        {
-         buff1.push_back(data10paket_1[a]);
-         buff2.push_back(data10paket_2[a]);
-         buff3.push_back(data10paket_3[a]);
-         buff4.push_back(data10paket_4[a]);
-        }
+           qDebug() << "size data 1: " << sizeof(data10paket_1)<< "jumlah paket: " << sizeof(data10paket_1)/sizeof(data10paket_1[0]);
+    //       qDebug() << "size data 2: " << sizeof(data10paket_2)<< "jumlah paket: " << sizeof(data10paket_2)/sizeof(data10paket_2[0]);
+    //       qDebug() << "size data 3: " << sizeof(data10paket_3)<< "jumlah paket: " << sizeof(data10paket_3)/sizeof(data10paket_3[0]);
+    //       qDebug() << "size data 4: " << sizeof(data10paket_4)<< "jumlah paket: " << sizeof(data10paket_4)/sizeof(data10paket_4[0]);
 
-        kanalip1.insert("kanal1",buff1);
-        kanalip1.insert("kanal2",buff2);
-        kanalip1.insert("kanal3",buff3);
-        kanalip1.insert("kanal4",buff4);
+           //    if(counterCH1>=10);//);//>=10) && (counterCH2 >=10) && (counterCH3 >=10) && (counterCH4 >=10))
+    //    {
 
-        //memasukkan seluruh data kanal ke doc json
-        //jika sudah melakukan parsing dan membaca dan ditampilkan
+            QJsonArray buff1;
+            QJsonArray buff2;
+            QJsonArray buff3;
+            QJsonArray buff4;
+            QJsonValue spsip1_;
+            for(int i=0; i<2560; i++){
+            buff1.push_back(data10paket_1[i]);
+                     buff2.push_back(data10paket_2[i]);
+                     buff3.push_back(data10paket_3[i]);
+                     buff4.push_back(data10paket_4[i]);
+            }
 
-        ip1.insert("ip1",kanalip1);
-           //json paket ip
-     QJsonDocument paket1Bro(ip1);
-       // QJsonDocument doc(jsonObj);
+            kanalip1.insert("kanal1",buff1);
+                    kanalip1.insert("kanal2",buff2);
+                    kanalip1.insert("kanal3",buff3);
+                    kanalip1.insert("kanal4",buff4);
+            kanalip1.insert("spsip1",spsX);
 
-        docByteArray = paket1Bro.toJson(QJsonDocument::Compact);
-        //qDebug() << paket1Bro.toJson();
-        //qDebug() <<"kirim";
-   sendDataClient1();
-    }
+            //memasukkan seluruh data kanal ke doc json
+            //jika sudah melakukan parsing dan membaca dan ditampilkan
 
+            ip1.insert("ip1",kanalip1);
+
+         QJsonDocument paket1Bro(ip1);
+
+        // QJsonDocument doc(jsonObj);
+        //     QString json = "{}";
+        //     QJsonDocument jdoc = QJsonDocument::fromJson(json.toUtf8());
+        QString sout = QString::fromUtf8(paket1Bro.toJson(QJsonDocument::JsonFormat::Compact));
+
+       sendDataClient1(sout);
 }
 
 void data::refresh_plot()
@@ -315,19 +306,22 @@ void data::onNewConnection()
 {
     //qDebug("%s() == %d",__FUNCTION__,tim_count);
     QWebSocket *pSocket1 = m_pWebSocketServer1->nextPendingConnection();
-    connect(pSocket1, &QWebSocket::binaryMessageReceived, this, &data::processMessage);
-   //connect(pSocket1, &QWebSocket::textMessageReceived, this, &data::processMessage);
+    //connect(pSocket1, &QWebSocket::binaryMessageReceived, this, &data::processMessage);
+    connect(pSocket1, &QWebSocket::textMessageReceived, this, &data::processMessage);
     connect(pSocket1, &QWebSocket::disconnected, this, &data::socketDisconnected);
     m_clients1 << pSocket1;
+
 }
 
-void data::processMessage(QByteArray message)
+void data::processMessage(QString message)
 {
     qDebug()<<message;
     QString bisa ="bisa";
     if(message==bisa)
     {
-      timera->start(1000);
+     timera->start(1000);//(2560*1000)/spsX); 2560=jumlah data dikali dengan 1000 milisecon dibagi sps
+     //membuat 2 opsi antara timer sesuai denga sps atau dikirim langsung dari counter data
+     //datamanagement();
     }
 }
 
@@ -336,9 +330,12 @@ void data::socketDisconnected()
    QWebSocket *pClient1 = qobject_cast<QWebSocket *>(sender());
     if (pClient1)
     {
+        //pClient1->peerAddress();
         m_clients1.removeAll(pClient1);
         pClient1->deleteLater();
-        qDebug()<<"client loss";
+        QHostAddress join=pClient1->peerAddress();
+        QString loststr=join.toString();
+        qDebug()<<"client loss" << loststr;
     }
 }
 
@@ -346,3 +343,5 @@ void data::socketDisconnected()
 //DDS (Data Distribution Service)
 //OMG (Object Management Group)
 //RTPS (Real Time Publish Subscribe)
+
+//memastikan panjang data dan menghindari pengiriman data secara berulang

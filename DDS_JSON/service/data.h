@@ -36,17 +36,13 @@ public:
     double ip2_k3_10[2560];
     double ip2_k4_10[2560];
     //// isi dds paket json
-    QJsonObject isikanal;
-    //kanal_p1
-    QJsonObject kanalip1;
-    QJsonObject kanalip2;
-    QJsonObject kanalip3;
-    QJsonObject kanalip4;
-    QJsonObject ip1;
 
     // paket kirim
-    QByteArray paketSIAP;
-    QByteArray docByteArray;
+//    QByteArray paketSIAP;
+//    QByteArray docByteArray;
+
+    unsigned short spsX;
+    int kirim;
 
 
 
@@ -59,13 +55,14 @@ public slots:
     void refresh_plot();
 
 
+
 private slots:
     void onNewConnection();
-    void processMessage(QByteArray message);
+    void processMessage(QString message);
     void socketDisconnected();
     void showTime();
     void datamanagement();
-    void sendDataClient1();;
+    void sendDataClient1(QString isipesan);;
 
 private:
     int counterCH1;
